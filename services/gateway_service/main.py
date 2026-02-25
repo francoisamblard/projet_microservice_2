@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.service_client import GatewayServiceRegistry
 from application.dtos import *
 import logging
@@ -15,6 +16,15 @@ app = FastAPI(
     version="1.0.0",
     openapi_url="/openapi.json",
     docs_url="/docs",
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Service registry

@@ -52,6 +52,19 @@ Accéder à la documentation Swagger:
 docker compose down
 ```
 
+## Page Web de Test (branche web)
+
+Une page web simple est disponible pour tester l’API via le navigateur.
+
+### Lancer la page web
+```bash
+cd web
+python3 -m http.server 8080
+```
+
+### Accès
+- Page web: http://localhost:8080/web/
+- L’API doit être démarrée via `docker compose up -d`
 ## Structure du Projet
 
 ```

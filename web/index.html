@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce Microservices</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .results {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #764ba2;
+            font-size: 0.9em;
+        }
+
+        .result-item strong {
+            color: #667eea;
+        }
+
+        .success {
+            color: #28a745;
+            padding: 10px;
+            background: #d4edda;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 10px;
+            background: #f8d7da;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .info {
+            color: #0c5460;
+            padding: 10px;
+            background: #d1ecf1;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 6px;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-ok {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .status-ko {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>E-Commerce Microservices</h1>
+            <p class="subtitle">Plateforme de test pour microservices FastAPI</p>
+        </header>
+
+        <div class="grid">
+            <!-- Status Card -->
+            <div class="card">
+                <h2>Etat du Systeme</h2>
+                <div id="status" class="status">
+                    <div class="status-item">
+                        <span>Gateway</span>
+                        <span id="status-gateway" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Product Service</span>
+                        <span id="status-product" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Customer Service</span>
+                        <span id="status-customer" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Inventory Service</span>
+                        <span id="status-inventory" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Pricing Service</span>
+                        <span id="status-pricing" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                    <div class="status-item">
+                        <span>Order Service</span>
+                        <span id="status-order" class="status-ko">⏳ Vérification...</span>
+                    </div>
+                </div>
+                <button onclick="checkStatus()">Rafraichir</button>
+            </div>
+
+            <!-- Products Card -->
+            <div class="card">
+                <h2>Produits</h2>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="productName" placeholder="Ex: Laptop Dell XPS">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="productDesc" placeholder="Ex: Portable professionnel">
+                </div>
+                <div class="form-group">
+                    <label>SKU</label>
+                    <input type="text" id="productSku" placeholder="Ex: DELL-001">
+                </div>
+                <div class="form-group">
+                    <label>Prix (€)</label>
+                    <input type="number" id="productPrice" placeholder="1299.99" step="0.01">
+                </div>
+                <button onclick="createProduct()">Creer Produit</button>
+                <div id="productMessage"></div>
+                <div id="productResults" class="results" style="display:none;"></div>
+                <button onclick="listProducts()" style="margin-top: 10px; background: #28a745;">Lister les Produits</button>
+            </div>
+
+            <!-- Customers Card -->
+            <div class="card">
+                <h2>Clients</h2>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="customerName" placeholder="Ex: John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="customerEmail" placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" id="customerPhone" placeholder="+33612345678">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="customerType">
+                        <option value="">Sélectionner...</option>
+                        <option value="individual">Particulier</option>
+                        <option value="business">Entreprise</option>
+                    </select>
+                </div>
+                <button onclick="createCustomer()">Creer Client</button>
+                <div id="customerMessage"></div>
+                <div id="customerResults" class="results" style="display:none;"></div>
+                <button onclick="listCustomers()" style="margin-top: 10px; background: #17a2b8;">Lister les Clients</button>
+            </div>
+
+            <!-- Orders Card -->
+            <div class="card">
+                <h2>Commandes</h2>
+                <div class="form-group">
+                    <label>ID Client</label>
+                    <input type="number" id="orderCustomerId" placeholder="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>ID Produit</label>
+                    <input type="number" id="orderProductId" placeholder="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Quantité</label>
+                    <input type="number" id="orderQuantity" placeholder="2" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label>Prix Unitaire (€)</label>
+                    <input type="number" id="orderPrice" placeholder="999.99" step="0.01">
+                </div>
+                <button onclick="createOrder()">Creer Commande</button>
+                <div id="orderMessage"></div>
+                <div id="orderResults" class="results" style="display:none;"></div>
+                <button onclick="listOrders()" style="margin-top: 10px; background: #ffc107;">Lister les Commandes</button>
+            </div>
+
+            <!-- Pricing Card -->
+            <div class="card">
+                <h2>Prix</h2>
+                <button onclick="listPricings()" style="width: 100%;">Lister les Prix</button>
+                <div id="pricingResults" class="results" style="display:none;"></div>
+            </div>
+
+            <!-- Inventory Card -->
+            <div class="card">
+                <h2>Stocks</h2>
+                <button onclick="listWarehouses()" style="width: 100%;">Voir les Warehouses</button>
+                <div id="inventoryResults" class="results" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        // Check Status
+        async function checkStatus() {
+            const services = [
+                { name: 'gateway', port: 8000 },
+                { name: 'product', port: 8001 },
+                { name: 'customer', port: 8002 },
+                { name: 'inventory', port: 8003 },
+                { name: 'pricing', port: 8004 },
+                { name: 'order', port: 8005 }
+            ];
+
+            for (const service of services) {
+                try {
+                    const response = await fetch(`http://localhost:${service.port}/health`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const element = document.getElementById(`status-${service.name}`);
+                    if (response.ok) {
+                        element.innerHTML = '✅ OK';
+                        element.className = 'status-ok';
+                    } else {
+                        element.innerHTML = '❌ Erreur';
+                        element.className = 'status-ko';
+                    }
+                } catch (e) {
+                    const element = document.getElementById(`status-${service.name}`);
+                    element.innerHTML = '❌ Indisponible';
+                    element.className = 'status-ko';
+                }
+            }
+        }
+
+        // Create Product
+        async function createProduct() {
+            const name = document.getElementById('productName').value;
+            const description = document.getElementById('productDesc').value;
+            const sku = document.getElementById('productSku').value;
+            const price = document.getElementById('productPrice').value;
+
+            if (!name || !sku || !price) {
+                document.getElementById('productMessage').innerHTML = 
+                    '<div class="error">❌ Veuillez remplir tous les champs</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/product`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, description, sku, base_price: parseFloat(price)
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('productMessage').innerHTML = 
+                        `<div class="success">✅ Produit créé! ID: ${data.pk}</div>`;
+                    document.getElementById('productName').value = '';
+                    document.getElementById('productDesc').value = '';
+                    document.getElementById('productSku').value = '';
+                    document.getElementById('productPrice').value = '';
+                } else {
+                    document.getElementById('productMessage').innerHTML = 
+                        '<div class="error">❌ Erreur lors de la création</div>';
+                }
+            } catch (e) {
+                document.getElementById('productMessage').innerHTML = 
+                    `<div class="error">❌ Erreur: ${e.message}</div>`;
+            }
+        }
+
+        // List Products
+        async function listProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                
+                let html = '<strong>Produits:</strong><br>';
+                products.forEach(p => {
+                    html += `<div class="result-item"><strong>${p.name}</strong> (${p.sku}) - ${p.base_price}€</div>`;
+                });
+                
+                document.getElementById('productResults').innerHTML = html;
+                document.getElementById('productResults').style.display = 'block';
+            } catch (e) {
+                document.getElementById('productResults').innerHTML = 
+                    `<div class="error">Erreur: ${e.message}</div>`;
+                document.getElementById('productResults').style.display = 'block';
+            }
+        }
+
+        // Create Customer
+        async function createCustomer() {
+            const name = document.getElementById('customerName').value;
+            const email = document.getElementById('customerEmail').value;
+            const phone = document.getElementById('customerPhone').value;
+            const type = document.getElementById('customerType').value;
+
+            if (!name || !email || !type) {
+                document.getElementById('customerMessage').innerHTML = 
+                    '<div class="error">❌ Veuillez remplir les champs obligatoires</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/customer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name, email, phone: phone || null, type
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('customerMessage').innerHTML = 
+                        `<div class="success">✅ Client créé! ID: ${data.pk}</div>`;
+                    document.getElementById('customerName').value = '';
+                    document.getElementById('customerEmail').value = '';
+                    document.getElementById('customerPhone').value = '';
+                    document.getElementById('customerType').value = '';
+                } else {
+                    document.getElementById('customerMessage').innerHTML = 
+                        '<div class="error">❌ Erreur lors de la création</div>';
+                }
+            } catch (e) {
+                document.getElementById('customerMessage').innerHTML = 
+                    `<div class="error">❌ Erreur: ${e.message}</div>`;
+            }
+        }
+
+        // List Customers
+        async function listCustomers() {
+            try {
+                const response = await fetch(`${API_URL}/customers`);
+                const customers = await response.json();
+                
+                let html = '<strong>Clients:</strong><br>';
+                customers.forEach(c => {
+                    html += `<div class="result-item"><strong>${c.name}</strong> (${c.email})</div>`;
+                });
+                
+                document.getElementById('customerResults').innerHTML = html;
+                document.getElementById('customerResults').style.display = 'block';
+            } catch (e) {
+                document.getElementById('customerResults').innerHTML = 
+                    `<div class="error">Erreur: ${e.message}</div>`;
+                document.getElementById('customerResults').style.display = 'block';
+            }
+        }
+
+        // Create Order
+        async function createOrder() {
+            const customerId = document.getElementById('orderCustomerId').value;
+            const productId = document.getElementById('orderProductId').value;
+            const quantity = document.getElementById('orderQuantity').value;
+            const price = document.getElementById('orderPrice').value;
+
+            if (!customerId || !productId || !quantity || !price) {
+                document.getElementById('orderMessage').innerHTML = 
+                    '<div class="error">❌ Veuillez remplir tous les champs</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customer_pk: parseInt(customerId),
+                        lines: [{
+                            product_pk: parseInt(productId),
+                            quantity: parseInt(quantity),
+                            unit_price: parseFloat(price)
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('orderMessage').innerHTML = 
+                        `<div class="success">✅ Commande créée! ID: ${data.pk} - Total: ${data.total_amount}€</div>`;
+                    document.getElementById('orderCustomerId').value = '';
+                    document.getElementById('orderProductId').value = '';
+                    document.getElementById('orderQuantity').value = '1';
+                    document.getElementById('orderPrice').value = '';
+                } else {
+                    document.getElementById('orderMessage').innerHTML = 
+                        '<div class="error">❌ Erreur lors de la création</div>';
+                }
+            } catch (e) {
+                document.getElementById('orderMessage').innerHTML = 
+                    `<div class="error">❌ Erreur: ${e.message}</div>`;
+            }
+        }
+
+        // List Orders
+        async function listOrders() {
+            try {
+                const response = await fetch(`${API_URL}/orders`);
+                const orders = await response.json();
+                
+                let html = '<strong>Commandes:</strong><br>';
+                orders.forEach(o => {
+                    html += `<div class="result-item"><strong>Commande #${o.pk}</strong> - Client ${o.customer_pk} - ${o.total_amount}€ (${o.status})</div>`;
+                });
+                
+                document.getElementById('orderResults').innerHTML = html;
+                document.getElementById('orderResults').style.display = 'block';
+            } catch (e) {
+                document.getElementById('orderResults').innerHTML = 
+                    `<div class="error">Erreur: ${e.message}</div>`;
+                document.getElementById('orderResults').style.display = 'block';
+            }
+        }
+
+        // List Pricings
+        async function listPricings() {
+            try {
+                const response = await fetch(`${API_URL}/pricings`);
+                const pricings = await response.json();
+                
+                let html = '<strong>Prix:</strong><br>';
+                pricings.forEach(p => {
+                    html += `<div class="result-item"><strong>Produit ${p.product_pk}</strong> - ${p.base_price}€ (Final: ${p.final_price}€)</div>`;
+                });
+                
+                document.getElementById('pricingResults').innerHTML = html;
+                document.getElementById('pricingResults').style.display = 'block';
+            } catch (e) {
+                document.getElementById('pricingResults').innerHTML = 
+                    `<div class="error">Erreur: ${e.message}</div>`;
+                document.getElementById('pricingResults').style.display = 'block';
+            }
+        }
+
+        // List Warehouses
+        async function listWarehouses() {
+            try {
+                const response = await fetch(`${API_URL}/warehouses`);
+                const warehouses = await response.json();
+                
+                let html = '<strong>Warehouses:</strong><br>';
+                warehouses.forEach(w => {
+                    html += `<div class="result-item"><strong>${w.name}</strong> (${w.location})</div>`;
+                });
+                
+                document.getElementById('inventoryResults').innerHTML = html;
+                document.getElementById('inventoryResults').style.display = 'block';
+            } catch (e) {
+                document.getElementById('inventoryResults').innerHTML = 
+                    `<div class="error">Erreur: ${e.message}</div>`;
+                document.getElementById('inventoryResults').style.display = 'block';
+            }
+        }
+
+        // Check status on page load
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>
