@@ -1,0 +1,187 @@
+version: '3.9'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ message broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # Management UI
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product_service/Dockerfile
+    container_name: product-service
+    environment:
+      PRODUCT_DB_HOST: postgres
+      PRODUCT_DB_PORT: 5432
+      PRODUCT_DB_USER: product_user
+      PRODUCT_DB_PASSWORD: product_pass
+      PRODUCT_DB_NAME: product_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # Customer Service
+  customer-service:
+    build:
+      context: .
+      dockerfile: services/customer_service/Dockerfile
+    container_name: customer-service
+    environment:
+      CUSTOMER_DB_HOST: postgres
+      CUSTOMER_DB_PORT: 5432
+      CUSTOMER_DB_USER: customer_user
+      CUSTOMER_DB_PASSWORD: customer_pass
+      CUSTOMER_DB_NAME: customer_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # Inventory Service
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory_service/Dockerfile
+    container_name: inventory-service
+    environment:
+      INVENTORY_DB_HOST: postgres
+      INVENTORY_DB_PORT: 5432
+      INVENTORY_DB_USER: inventory_user
+      INVENTORY_DB_PASSWORD: inventory_pass
+      INVENTORY_DB_NAME: inventory_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # Pricing Service
+  pricing-service:
+    build:
+      context: .
+      dockerfile: services/pricing_service/Dockerfile
+    container_name: pricing-service
+    environment:
+      PRICING_DB_HOST: postgres
+      PRICING_DB_PORT: 5432
+      PRICING_DB_USER: pricing_user
+      PRICING_DB_PASSWORD: pricing_pass
+      PRICING_DB_NAME: pricing_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order_service/Dockerfile
+    container_name: order-service
+    environment:
+      ORDER_DB_HOST: postgres
+      ORDER_DB_PORT: 5432
+      ORDER_DB_USER: order_user
+      ORDER_DB_PASSWORD: order_pass
+      ORDER_DB_NAME: order_db
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # API Gateway
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway_service/Dockerfile
+    container_name: gateway
+    environment:
+      PRODUCT_SERVICE_URL: http://product-service:8001
+      CUSTOMER_SERVICE_URL: http://customer-service:8002
+      INVENTORY_SERVICE_URL: http://inventory-service:8003
+      PRICING_SERVICE_URL: http://pricing-service:8004
+      ORDER_SERVICE_URL: http://order-service:8005
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "8000:8000"
+    depends_on:
+      - product-service
+      - customer-service
+      - inventory-service
+      - pricing-service
+      - order-service
+      - rabbitmq
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
