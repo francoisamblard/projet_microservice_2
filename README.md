@@ -21,6 +21,31 @@ Projet de TP microservices développé avec FastAPI, PostgreSQL et RabbitMQ.
 - **Pydantic** - Validation des données
 - **Docker** - Containerisation
 
+## Gestion des dépendances avec uv
+
+Le projet utilise **uv** avec `pyproject.toml`.
+
+### Installer uv
+```bash
+pip install uv
+```
+
+### Installer les dépendances
+```bash
+uv venv
+uv sync
+```
+
+### Ajouter une dépendance
+```bash
+uv add <package>
+```
+
+### Générer requirements.txt (pour Docker)
+```bash
+uv pip compile pyproject.toml -o requirements.txt
+```
+
 ## Lancement Rapide
 
 ### 1. Démarrer tous les services
@@ -178,8 +203,9 @@ service_name/
 ```
 
 ### Ajouter une dépendance
-1. Ajouter dans `requirements.txt`
-2. Reconstruire: `docker compose up -d --build`
+1. Ajouter via `uv add <package>`
+2. Générer `requirements.txt`: `uv pip compile pyproject.toml -o requirements.txt`
+3. Reconstruire: `docker compose up -d --build`
 
 ## Ports Utilisés
 
